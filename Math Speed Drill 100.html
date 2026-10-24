@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8"><title>Math Speed Drill 100</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--tx:#1b1d29;--mu:#6b7080;--ac:#4f46e5;--ok:#16a34a;--no:#dc2626;--bd:#e3e5ee;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12131a;--card:#1c1e29;--tx:#eceef7;--mu:#9aa0b5;--ac:#818cf8;--bd:#2c2f3f;--ok:#4ade80;--no:#f87171}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,sans-serif;padding:16px}
+main{max-width:420px;margin:auto;text-align:center}h1{font-size:1.4rem;margin:0 0 4px}.mu{color:var(--mu)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:16px;margin:12px 0}
+.stats{display:flex;justify-content:space-between;gap:6px;font-size:.85rem;font-variant-numeric:tabular-nums;font-weight:600}
+.bar{height:6px;background:var(--bd);border-radius:9px;margin:10px 0;overflow:hidden}.bar i{display:block;height:100%;width:0;background:var(--ac)}
+#ex{font-size:2.2rem;font-weight:700;margin:14px 0 6px;font-variant-numeric:tabular-nums}
+#in{font-size:2rem;min-height:3rem;border-bottom:2px solid var(--ac);margin:0 20px 14px;font-variant-numeric:tabular-nums}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pad button,.go{font:600 1.4rem system-ui;padding:14px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);cursor:pointer}
+.pad .ok{grid-column:span 3;background:var(--ac);color:#fff;border:0}
+.go{background:var(--ac);color:#fff;border:0;width:100%;font-size:1.1rem}
+.big{font-size:2.4rem;font-weight:800}.w{text-align:left;font-size:.9rem;max-height:240px;overflow-y:auto}.w div{padding:3px 0;border-bottom:1px solid var(--bd)}
+.modes{display:flex;gap:8px;margin:10px 0}.md{flex:1;font:600 1rem system-ui;padding:12px 6px;border-radius:12px;border:2px solid var(--bd);background:var(--card);color:var(--tx);cursor:pointer}.md.sel{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 14%,transparent)}
+.hide{display:none}
+</style></head><body><main>
+<h1>⚡ Math Speed Drill</h1><p class="mu">100 soal acak, + − ×, bilangan negatif 🔥</p>
+<div id="home" class="card"><div class="modes"><button class="md" data-m="easy">😌 Easy</button><button class="md sel" data-m="normal">🔥 Normal</button><button class="md" data-m="hard">💀 Hard</button></div><p class="mu" id="md-d"></p><p>Ketik jawaban, tekan OK / Enter. Pake ± buat minus 😎</p><button class="go" id="st">Mulai 🚀</button></div>
+<div id="game" class="hide">
+<div class="card"><div class="stats"><span id="tm">0:00.0</span><span id="pr">0/100</span><span id="qm">0.0 /min</span></div><div class="bar"><i id="bar"></i></div>
+<div id="ex"></div><div id="in"></div>
+<div class="pad" id="pad"></div></div></div>
+<div id="end" class="card hide"></div>
+</main><script>
+const $=id=>document.getElementById(id),R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+let Q,i,buf,t0,iv,bad;
+const neg=n=>n<0?`(−${-n})`:n;
+const M={easy:{ops:['+','−'],mx:20,n1:0,n2:.3},normal:{ops:['+','−','×'],mx:50,n1:.15,n2:.6},hard:{ops:['+','−','×','÷'],mx:99,n1:.3,n2:.6}};
+let mode='normal';
+function gen(){const c=M[mode],o=c.ops[R(0,c.ops.length-1)],h=mode=='hard',s=p=>Math.random()<p?-1:1;let a,b,v;
+if(o=='×'){a=R(2,h?25:30)*s(.5);b=R(2,h?15:12)*s(.5);v=a*b}
+else if(o=='÷'){b=R(2,15)*s(.5);v=R(2,20)*s(.4);a=b*v}
+else{a=R(2,c.mx)*s(c.n1);b=R(2,c.mx)*s(c.n2);v=o=='+'?a+b:a-b}
+return{t:(a<0?neg(a):a)+' '+o+' '+neg(b),v}}
+const keys=['7','8','9','4','5','6','1','2','3','±','0','⌫'];
+$('pad').innerHTML=keys.map(k=>`<button data-k="${k}">${k}</button>`).join('')+'<button class="ok" data-k="OK">OK ✓</button>';
+$('pad').onclick=e=>{const k=e.target.dataset.k;if(k)press(k)};
+document.onkeydown=e=>{if($('game').classList.contains('hide'))return;
+if(/^\d$/.test(e.key))press(e.key);else if(e.key=='-')press('±');else if(e.key=='Backspace')press('⌫');else if(e.key=='Enter')press('OK')};
+function press(k){if(k=='OK'){if(buf==''||buf=='-')return;submit();return}
+if(k=='⌫')buf=buf.slice(0,-1);else if(k=='±')buf=buf[0]=='-'?buf.slice(1):'-'+buf;else if(buf.replace('-','').length<6)buf+=k;
+$('in').textContent=buf.replace('-','−')||'\u00a0'}
+function fmt(ms){const s=ms/1000;return Math.floor(s/60)+':'+(s%60).toFixed(1).padStart(4,'0')}
+function tick(){const ms=Date.now()-t0;$('tm').textContent=fmt(ms);$('qm').textContent=(i/(ms/60000||1)).toFixed(1)+' /min · '+(i?(ms/1000/i).toFixed(1):'0.0')+' s/q'}
+function show(){$('ex').textContent=Q[i].t+' = ?';buf='';$('in').textContent='\u00a0';$('pr').textContent=i+'/100';$('bar').style.width=i+'%'}
+function submit(){const n=parseInt(buf,10);if(n!==Q[i].v)bad.push({q:Q[i].t,you:n,ok:Q[i].v});i++;
+if(i>=100)return finish();show()}
+function finish(){clearInterval(iv);const ms=Date.now()-t0,m=ms/60000,c=100-bad.length;
+$('game').classList.add('hide');const e=$('end');e.classList.remove('hide');
+e.innerHTML=`<div class="mu">Mode: ${mode.toUpperCase()}</div><div class="big">${(100/m).toFixed(1)} soal/menit</div><p>⏱️ ${fmt(ms)} · ⚡ ${(ms/100000).toFixed(2)} dtk/soal · ✅ benar ${c}/100 · 🎯 ${(c/m).toFixed(1)} benar/menit</p>`+
+(bad.length?`<h3>Yang salah (${bad.length})</h3><div class="w">${bad.map(b=>`<div>${b.q} = <b style="color:var(--ok)">${String(b.ok).replace('-','−')}</b> <span style="color:var(--no)">(kamu: ${isNaN(b.you)?'-':String(b.you).replace('-','−')})</span></div>`).join('')}</div>`:'<p>🔥 Perfect, gacor parah bro!</p>')+
+'<br><button class="go" id="re">Main lagi 🔁</button><br><br><button class="go" id="hm">Ganti mode 🎮</button>';$('re').onclick=start;$('hm').onclick=()=>{$('end').classList.add('hide');$('home').classList.remove('hide')}}
+function start(){Q=Array.from({length:100},gen);i=0;bad=[];$('home').classList.add('hide');$('end').classList.add('hide');$('game').classList.remove('hide');
+t0=Date.now();clearInterval(iv);iv=setInterval(tick,100);show()}
+const DS={easy:'+ − aja, angka kecil (sampe 20)',normal:'+ − ×, angka sampe 50',hard:'+ − × ÷, angka gede & banyak negatif'};
+document.querySelectorAll('.md').forEach(b=>b.onclick=()=>{mode=b.dataset.m;document.querySelectorAll('.md').forEach(x=>x.classList.toggle('sel',x==b));$('md-d').textContent=DS[mode]});
+$('md-d').textContent=DS[mode];
+$('st').onclick=start;
+</script></body></html>
